@@ -28,6 +28,7 @@ class Image {
   Image(const Image& orig);
   Image& operator=(const Image& orig);
 
+
   virtual ~Image();
 
   /** 
@@ -189,7 +190,8 @@ class Image {
   void fill(const Pixel& c);
 
  private:
-   // todo
+  int w,h,ch;
+  char *_data;
 };
 }  // namespace agl
 #endif  // AGL_IMAGE_H_
