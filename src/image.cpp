@@ -43,11 +43,12 @@ Image& Image::operator=(const Image& orig) {
   }
   if (_data != nullptr){
    delete _data;
+   _data = orig._data;
   }
    w = orig.w;
    h = orig.h;
    ch = orig.ch;
-   _data = orig._data;
+   
    return *this;
 }
 
@@ -85,14 +86,16 @@ bool Image::load(const std::string& filename, bool flip) {
    int width,height,channels = 0;
    unsigned char *pic = stbi_load(filename.c_str() , &width, &height, &channels, 3);
 
-   if (_data != nullptr){
-      delete _data;
-   }
+   
    if (pic != nullptr){
       w = width;
       h = height;
       ch = channels;
-      _data = new char[w*h*ch];
+      if (_data != nullptr){
+         delete _data;
+         _data = new char[w*h*ch];
+
+      }
       // copy values, in which case we can free pic
       for(int i = 0; i<w*h*ch; i++){
          _data[i] = pic[i];
@@ -105,9 +108,9 @@ bool Image::load(const std::string& filename, bool flip) {
 
 
 bool Image::save(const std::string& filename, bool flip) const {
-   if(_data != nullptr){
+   if(_data != nullptr){ //valgrind conditional jump, uninitialized values
       //returns int
-      stbi_write_png((filename.c_str()) , w, h, ch, _data, w * ch);
+      stbi_write_png((filename.c_str()) , w, h, ch, _data, w * ch); //valgrind
       return true;
    }
    return false;
