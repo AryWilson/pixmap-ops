@@ -195,7 +195,7 @@ Image Image::rotate90() const {
 Image Image::subimage(int startx, int starty, int width, int height) const {
    Image sub(width, height);
    if(_data == nullptr){return sub;}
-   sub._data = new char[width*height*3];
+   sub._data = new char[width*height*ch];
    int index = 0;
    for (int i = startx; i < startx+width; i++){
       for (int j = starty; j < starty+height; j++){
@@ -265,7 +265,7 @@ Image Image::gammaCorrect(float gamma) const {
 
    Image result(w, h);
    if(_data == nullptr){return result;}
-   result._data = new char[w*h*3];
+   result._data = new char[w*h*ch];
    for(int i = 0; i<w*h*ch; i++){
       result._data[i] = pow(_data[i],(1/gamma));
    }
