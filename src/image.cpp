@@ -45,8 +45,9 @@ Image& Image::operator=(const Image& orig) {
   }
   if (_data != nullptr){
    delete _data;
-   _data = orig._data;
   }
+
+  _data = orig._data;
    w = orig.w;
    h = orig.h;
    ch = orig.ch;
@@ -95,9 +96,10 @@ bool Image::load(const std::string& filename, bool flip) {
       ch = channels;
       if (_data != nullptr){
          delete _data;
-         _data = new char[w*h*ch];
 
       }
+      _data = new char[w*h*ch];
+
       // copy values, in which case we can free pic
       for(int i = 0; i<w*h*ch; i++){
          _data[i] = pic[i];
@@ -297,11 +299,13 @@ Image Image::invert() const {
 Image Image::grayscale() const {
    Image result(w, h);
    if(_data == nullptr){return result;}
-   result._data = new char[w*h];
+   result._data = new char[w*h*ch];
    for(int i = 0; i < w; i++){
       for(int j = 0; j < h; j++){
          struct Pixel rgb = get(i,j);
-         result._data[i*w + j] = rgb.r*.11 + rgb.g*.59 + rgb.b*.11;
+         unsigned char val = rgb.r*.11 + rgb.g*.59 + rgb.b*.11;
+         result.set(i,j,Pixel{val, val, val});
+         // result._data[i*w + j] = rgb.r*.11 + rgb.g*.59 + rgb.b*.11;
 
       }
    }
