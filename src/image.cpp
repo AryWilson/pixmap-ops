@@ -50,8 +50,8 @@ Image& Image::operator=(const Image& orig) {
 
 Image::~Image() {
    // destructor
-   if (_data != nullptr){
-      stbi_image_free(_data);
+   if (_data != NULL){
+      // stbi_image_free(_data);
       delete[] _data;
    }
 }
@@ -72,7 +72,7 @@ void Image::set(int width, int height, unsigned char* data) {
    w = width;
    h = height;
    _data = (char*) data; // this casting ok?????
-   // _data = new char(w*h*ch);
+   // _data = new char[w*h*ch);
    // for (int i=0; i<w; i+=ch){
    //    for (int j=0; i<h; i++){
 
@@ -85,7 +85,6 @@ void Image::set(int width, int height, unsigned char* data) {
 }
 
 bool Image::load(const std::string& filename, bool flip) {
-   char* f;
    int width,height,channels = 0;
    unsigned char *pic = stbi_load(filename.c_str() , &width, &height, &channels, 3);
 
@@ -93,7 +92,7 @@ bool Image::load(const std::string& filename, bool flip) {
       w = width;
       h = height;
       ch = channels;
-      _data = new char(w*h*ch);
+      _data = new char[w*h*ch];
       // copy values, in which case we can free pic
       for(int i = 0; i<w*h*ch; i++){
          _data[i] = pic[i];
@@ -108,7 +107,10 @@ bool Image::load(const std::string& filename, bool flip) {
 
 
 bool Image::save(const std::string& filename, bool flip) const {
-   stbi_write_png(filename.c_str(), w, h, ch, _data, w*ch);
+   if(_data != NULL){
+      stbi_write_png((filename.c_str()) , w, h, ch, _data, w * ch);
+      return true;
+   }
    return false;
 }
 
@@ -156,7 +158,7 @@ void Image::set(int i, const Pixel& c)
 
 Image Image::resize(int width, int height) const {
    Image result(width, height);
-   result._data = new char(width*height*3);
+   result._data = new char[width*height*3];
    for(int i = 0; i<width; i++){
       for(int j = 0; j<height; j++){
          int _i = floor((i/(h-1))*(height-1));
@@ -189,7 +191,7 @@ Image Image::rotate90() const {
 
 Image Image::subimage(int startx, int starty, int width, int height) const {
    Image sub(width, height);
-   sub._data = new char(width*height*3);
+   sub._data = new char[width*height*3];
    int index = 0;
    for (int i = startx; i < startx+width; i++){
       for (int j = starty; j < starty+height; j++){
@@ -207,8 +209,8 @@ void Image::replace(const Image& image, int startx, int starty) {
    int width = image.w;
    int height = image.h;
 
-   for (int _i = startx, i = 0; _i < w, i < width; _i++, i++){
-      for (int _j = starty, j = 0; _j < h, j < height; _j++, j++){
+   for (int _i = startx, i = 0; _i < w && i < width; _i++, i++){
+      for (int _j = starty, j = 0; _j < h && j < height; _j++, j++){
          _data[_i*w + _j] = image._data[i*w + j];
          _data[_i*w + _j + 1] = image._data[i*w + j + 1];
          _data[_i*w + _j + 2] = image._data[_i*w + _j + 2];
@@ -261,7 +263,7 @@ Image Image::darkest(const Image& other) const {
 Image Image::gammaCorrect(float gamma) const {
 
    Image result(w, h);
-   result._data = new char(w*h*3);
+   result._data = new char[w*h*3];
    for(int i = 0; i<w*h*ch; i++){
       result._data[i] = pow(_data[i],(1/gamma));
    }
@@ -272,7 +274,7 @@ Image Image::gammaCorrect(float gamma) const {
 
 Image Image::alphaBlend(const Image& other, float alpha) const {
    Image result(w, h);
-   result._data = new char(w*h*3);
+   result._data = new char[w*h*3];
    for(int i = 0; i<w*h; i++){
       char r = _data[i];
       char g = _data[i+1];
@@ -296,7 +298,7 @@ Image Image::invert() const {
 
 Image Image::grayscale() const {
    Image result(w, h);
-   result._data = new char(w*h);
+   result._data = new char[w*h];
    for(int i = 0; i<w*h; i++){
       char r = _data[i];
       char g = _data[i+1];
