@@ -16,12 +16,14 @@ Image::Image() {
    w = 0;
    h = 0;
    ch = 3;
+   _data = nullptr;
 }
 
 Image::Image(int width, int height)  {
    w = width;
    h = height;
    ch = 3;
+   _data = nullptr;
    // general constructor
 
 }
@@ -296,12 +298,19 @@ Image Image::grayscale() const {
    Image result(w, h);
    if(_data == nullptr){return result;}
    result._data = new char[w*h];
-   for(int i = 0; i<w*h; i++){
-      char r = _data[i];
-      char g = _data[i+1];
-      char b = _data[i+2];
-      result._data[i] = r*.11 + g*.59 + b*.11;
+   for(int i = 0; i < w; i++){
+      for(int j = 0; j < h; j++){
+         struct Pixel rgb = get(i,j);
+         result._data[i*w + j] = rgb.r*.11 + rgb.g*.59 + rgb.b*.11;
+
+      }
    }
+   // for(int i = 0; i<w*h*ch; i++){
+   //    char r = _data[i];
+   //    char g = _data[i+1];
+   //    char b = _data[i+2];
+   //    result._data[i] = r*.11 + g*.59 + b*.11;
+   // }
    
    return result;
 }
