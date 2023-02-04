@@ -118,20 +118,20 @@ bool Image::save(const std::string& filename, bool flip) const {
 
 Pixel Image::get(int row, int col) const {
    unsigned char r,g,b = 0;
-   if((row < h) && (col < ch*w) && (_data != nullptr)){
-      r = _data[row*w + col];
-      g = _data[row*w + col];
-      b = _data[row*w + col];
+   if((row < h) && (col < w) && (_data != nullptr)){
+      r = _data[ch*row*w + ch*col];
+      g = _data[ch*row*w + ch*col + 1];
+      b = _data[ch*row*w + ch*col + 2];
    }
    return Pixel{ r, g, b };
 }
 
 void Image::set(int row, int col, const Pixel& color) {
    //check for valid inputs
-   if((row < h) & (col < ch*w) && (_data != nullptr)){
-      _data[row*w + col] = color.r;
-      _data[row*w + col + 1] = color.g;
-      _data[row*w + col + 2] = color.b;
+   if((row < h) & (col < w) && (_data != nullptr)){
+      _data[ch*row*w + ch*col] = color.r;
+      _data[ch*row*w + ch*col + 1] = color.g;
+      _data[ch*row*w + ch*col + 2] = color.b;
    }
 
  
@@ -141,7 +141,7 @@ void Image::set(int row, int col, const Pixel& color) {
 Pixel Image::get(int i) const
 {
    unsigned char r,g,b = 0;
-   if(i < w*h){
+   if(i < w*h*ch  && (_data != nullptr)){
       r = _data[i*ch];
       g = _data[i*ch + 1];
       b = _data[i*ch + 2];
@@ -151,7 +151,7 @@ Pixel Image::get(int i) const
 
 void Image::set(int i, const Pixel& c)
 {
-      if(i < w*h && (_data != nullptr)){
+      if(i < w*h*ch && (_data != nullptr)){
       _data[i*ch] = c.r;
       _data[i*ch + 1] = c.g;
       _data[i*ch + 2] = c.b;
@@ -162,14 +162,13 @@ Image Image::resize(int width, int height) const {
    Image result(width, height);
    if(_data == nullptr){return result;}
 
-   result._data = new char[width*height*3];
+   result._data = new char[width*height*ch];
    for(int i = 0; i<width; i++){
       for(int j = 0; j<height; j++){
-         int _i = floor((i/(h-1))*(height-1));
-         int _j = floor((j/(w-1))*(width-1));
-         result._data[i*width + j] = _data[_i*w + _j];
-         result._data[i*width + j + 1] = _data[_i*w + _j + 1];
-         result._data[i*width + j + 2] = _data[_i*w + _j + 2];
+         int _i = floor((i/(h-1.0f))*(height-1));
+         int _j = floor((j/(w-1.0f))*(width-1));
+
+         result.set(i,j,get(_i,_j));
       }
 
    }
@@ -200,9 +199,7 @@ Image Image::subimage(int startx, int starty, int width, int height) const {
    int index = 0;
    for (int i = startx; i < startx+width; i++){
       for (int j = starty; j < starty+height; j++){
-         sub._data[index] = _data[i*width + j];
-         sub._data[index + 1] = _data[i*width + j + 1];
-         sub._data[index + 2] = _data[i*width + j + 2];
+         sub.set(index,get(i,j));
          index += 3;
 
       }
@@ -217,9 +214,7 @@ void Image::replace(const Image& image, int startx, int starty) {
 
    for (int _i = startx, i = 0; _i < w && i < width; _i++, i++){
       for (int _j = starty, j = 0; _j < h && j < height; _j++, j++){
-         _data[_i*w + _j] = image._data[i*w + j];
-         _data[_i*w + _j + 1] = image._data[i*w + j + 1];
-         _data[_i*w + _j + 2] = image._data[_i*w + _j + 2];
+         set(_i,_j,image.get(i,j));
       }
    }
   
@@ -280,20 +275,12 @@ Image Image::gammaCorrect(float gamma) const {
 }
 
 Image Image::alphaBlend(const Image& other, float alpha) const {
-   Image result(w, h);
+   Image result(w,h);
    if(_data == nullptr || other._data == nullptr){return result;}
 
-   result._data = new char[w*h*3];
-   for(int i = 0; i<w*h; i++){
-      char r = _data[i];
-      char g = _data[i+1];
-      char b = _data[i+2];
-      char otherR = other._data[i];
-      char otherG = other._data[i+1];
-      char otherB = other._data[i+2];
-      result._data[i] = r*(1-alpha) + otherR*(alpha);
-      result._data[i + 1] = g*(1-alpha) + otherG*(alpha);
-      result._data[i + 2] = b*(1-alpha) + otherB*(alpha);
+   result._data = new char[w*h*ch];
+   for(int i = 0; i<w*h*ch; i++){
+      _data[i] = _data[i]*(1-alpha) + other._data[i]*(alpha);
    }
 
    return result;
