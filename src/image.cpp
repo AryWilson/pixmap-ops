@@ -180,7 +180,15 @@ Image Image::resize(int width, int height) const {
 }
 
 Image Image::flipHorizontal() const {
-   Image result(0, 0);
+   Image result(w, h);
+   for(int i = 0; i<w/2 ; i++){
+      for(int j = 0; j < h; j++){
+         struct Pixel swap = get(w-i,j);
+         result.set(w-i,j, get(i,j));
+         result.set(i,j,swap);
+      }
+   }
+
    return result;
 
 }
