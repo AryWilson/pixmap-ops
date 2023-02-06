@@ -191,7 +191,7 @@ class Image {
 
  private:
   int w,h,ch;
-  char *_data;
+  char * _data;
 };
 }  // namespace agl
 #endif  // AGL_IMAGE_H_

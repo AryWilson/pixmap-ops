@@ -44,7 +44,7 @@ Image& Image::operator=(const Image& orig) {
    return *this;
   }
   if (_data != nullptr){
-   delete _data;
+   delete[] _data;
   }
 
   _data = orig._data;
@@ -59,7 +59,7 @@ Image::~Image() {
    // destructor
    if (_data != nullptr){
       // stbi_image_free(_data);
-      delete _data;
+      delete[] _data;
    }
 }
 
@@ -79,7 +79,7 @@ void Image::set(int width, int height, unsigned char* data) {
    w = width;
    h = height;
    if (_data != nullptr){
-      delete _data;
+      delete[] _data;
    }
    _data = (char*) data;
 
@@ -95,10 +95,10 @@ bool Image::load(const std::string& filename, bool flip) {
       h = height;
       ch = channels;
       if (_data != nullptr){
-         delete _data;
+         delete[] _data;
 
       }
-      _data = new char[w*h*ch];
+      _data = new char [w*h*ch];
 
       // copy values, in which case we can free pic
       for(int i = 0; i<w*h*ch; i++){
@@ -166,7 +166,7 @@ Image Image::resize(int width, int height) const {
    Image result(width, height);
    if(_data == nullptr){return result;}
 
-   result._data = new char[width*height*ch];
+   result._data = new char [width*height*ch];
    for(int i = 0; i<width; i++){
       for(int j = 0; j<height; j++){
          int _i = floor((i/(h-1.0f))*(height-1));
@@ -181,6 +181,8 @@ Image Image::resize(int width, int height) const {
 
 Image Image::flipHorizontal() const {
    Image result(w, h);
+   if(_data == nullptr){return result;}
+   result._data = new char [w*h*ch];
    for(int i = 0; i<w/2 ; i++){
       for(int j = 0; j < h; j++){
          struct Pixel swap = get(w-i,j);
@@ -207,7 +209,7 @@ Image Image::rotate90() const {
 Image Image::subimage(int startx, int starty, int width, int height) const {
    Image sub(width, height);
    if(_data == nullptr){return sub;}
-   sub._data = new char[width*height*ch];
+   sub._data = new char [width*height*ch];
    int index = 0;
    for (int i = startx; i < startx+width; i++){
       for (int j = starty; j < starty+height; j++){
@@ -277,7 +279,7 @@ Image Image::gammaCorrect(float gamma) const {
 
    Image result(w, h);
    if(_data == nullptr){return result;}
-   result._data = new char[w*h*ch];
+   result._data = new char [w*h*ch];
    for(int i = 0; i<w*h*ch; i++){
       result._data[i] = pow(_data[i],(1/gamma));
    }
@@ -290,7 +292,7 @@ Image Image::alphaBlend(const Image& other, float alpha) const {
    Image result(w,h);
    if(_data == nullptr || other._data == nullptr){return result;}
 
-   result._data = new char[w*h*ch];
+   result._data = new char [w*h*ch];
    for(int i = 0; i<w*h*ch; i++){
       _data[i] = _data[i]*(1-alpha) + other._data[i]*(alpha);
    }
@@ -307,7 +309,7 @@ Image Image::invert() const {
 Image Image::grayscale() const {
    Image result(w, h);
    if(_data == nullptr){return result;}
-   result._data = new char[w*h*ch];
+   result._data = new char [w*h*ch];
    for(int i = 0; i < w; i++){
       for(int j = 0; j < h; j++){
          struct Pixel rgb = get(i,j);
