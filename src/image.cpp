@@ -45,6 +45,7 @@ Image& Image::operator=(const Image& orig) {
   }
   if (_data != nullptr){
    delete[] _data;
+   _data = nullptr;
   }
 
   _data = orig._data;
@@ -60,6 +61,8 @@ Image::~Image() {
    if (_data != nullptr){
       // stbi_image_free(_data);
       delete[] _data;
+      _data = nullptr;
+
    }
 }
 
@@ -80,6 +83,8 @@ void Image::set(int width, int height, unsigned char* data) {
    h = height;
    if (_data != nullptr){
       delete[] _data;
+      _data = nullptr;
+
    }
    _data = (char*) data;
 
@@ -96,7 +101,7 @@ bool Image::load(const std::string& filename, bool flip) {
       ch = channels;
       if (_data != nullptr){
          delete[] _data;
-
+         _data = nullptr;
       }
       _data = new char [w*h*ch];
 
@@ -211,11 +216,10 @@ Image Image::subimage(int startx, int starty, int width, int height) const {
    if(_data == nullptr){return sub;}
    sub._data = new char [width*height*ch];
    int index = 0;
-   for (int i = startx; i < startx+width; i++){
-      for (int j = starty; j < starty+height; j++){
+   for (int i = startx; i < startx+width && i < w; i++){
+      for (int j = starty; j < starty+height  && j < h; j++){
          sub.set(index,get(i,j));
          index += 3;
-
       }
    }
    return sub;
