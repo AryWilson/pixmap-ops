@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 
    // flip horizontal
    Image flip = image.flipHorizontal(); 
-   flip.save("earth-flip.png");  // VALGRIND ERROR
+   flip.save("earth-flip.png");  
 
    // sub image
    Image sub = image.subimage(200, 200, 100, 100);

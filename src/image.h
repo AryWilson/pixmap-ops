@@ -190,7 +190,8 @@ class Image {
   void fill(const Pixel& c);
 
  private:
-  int w,h,ch;
+  int w,h,ch = 0;
+  // struct Pixel * _data = nullptr;
   char * _data;
 };
 }  // namespace agl
