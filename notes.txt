@@ -1,0 +1,10 @@
+save is bad, but only for certain operations, so an operation problem?
+bad operations:
+resize (save)
+flip (save)
+sub image (generic)
+idk about alpha or blend
+
+
+flip data
+memory errors

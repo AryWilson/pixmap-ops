@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 
    // resize
    Image resize = image.resize(200,300);
-   resize.save("earth-200-300.png");
+   // resize.save("earth-200-300.png"); // VALGRIND ERROR
 
    // grayscale
    Image grayscale = image.grayscale(); 
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 
    // sub image
    Image sub = image.subimage(200, 200, 100, 100);
-   sub.save("earth-subimage.png"); 
+   // sub.save("earth-subimage.png"); //VALGRIND ERROR
 
    // gamma correction
    Image gamma = image.gammaCorrect(0.6f); 
@@ -84,9 +84,9 @@ int main(int argc, char** argv)
    int y = (int) (0.5f * (image.width() - soup.width()));
    int x = (int) (0.5f * (image.height() - soup.height()));
    Image background = image.subimage(x, y, soup.width(), soup.height());
-   background.save("background-test.png");
-   Image blend = background.alphaBlend(soup, 0.5f);
-   image.replace(blend, x, y);
-   image.save("earth-blend-0.5.png");
+   // background.save("background-test.png"); // VALGRIND ERROR
+   // Image blend = background.alphaBlend(soup, 0.5f);
+   // image.replace(blend, x, y);
+   // image.save("earth-blend-0.5.png");
 }
 

@@ -64,8 +64,7 @@ Image& Image::operator=(const Image& orig) {
    return *this;
   }
   if (_data != nullptr){
-   delete[] _data;
-   _data = nullptr;
+   clean();
   }
 
    w = orig.w;
@@ -95,14 +94,12 @@ char* Image::data() const {
    return (char*) _data;
 }
 
-void Image::set(int width, int height, unsigned char* data) {
+void Image::set(int width, int height, unsigned char* data) { 
+   if (_data != nullptr){
+      clean();
+   }
    w = width;
    h = height;
-   if (_data != nullptr){
-      delete[] _data;
-      _data = nullptr;
-
-   }
    // _data = (char*) data;
    _data = new struct Pixel[w*h];
    memcpy(_data, data, w*h*sizeof(struct Pixel));
@@ -117,13 +114,13 @@ bool Image::load(const std::string& filename, bool flip) {
 
    
    if (pic != nullptr){
+      if (_data != nullptr){
+         clean();
+      }
       w = width;
       h = height;
       ch = channels;
-      if (_data != nullptr){
-         delete[] _data;
-         _data = nullptr;
-      }
+
       _data = (struct Pixel *) pic;
       stb_load = true;
       return true;
