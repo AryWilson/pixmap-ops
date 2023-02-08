@@ -48,12 +48,11 @@ Image::Image(int width, int height)  {
 
 Image::Image(const Image& orig){
    // copy constructor
-   w = orig.w;
-   h = orig.h;
+   w = orig.width();
+   h = orig.height();
    ch = orig.ch;
    _data = new struct Pixel[w*h];
    memcpy(_data, orig._data, w*h*sizeof(struct Pixel));
-   // _data = (orig._data);
 
   
 }
@@ -67,10 +66,9 @@ Image& Image::operator=(const Image& orig) {
    clean();
   }
 
-   w = orig.w;
-   h = orig.h;
+   w = orig.width();
+   h = orig.height();
    ch = orig.ch;
-   // _data = orig._data;
    _data = new struct Pixel[w*h];
    memcpy(_data, orig._data, w*h*sizeof(struct Pixel));
    
@@ -91,7 +89,7 @@ int Image::height() const {
 }
 
 char* Image::data() const {
-   return (char*) _data;
+   return (char *) _data;
 }
 
 void Image::set(int width, int height, unsigned char* data) { 
@@ -109,6 +107,7 @@ void Image::set(int width, int height, unsigned char* data) {
 }
 
 bool Image::load(const std::string& filename, bool flip) {
+   stbi_set_flip_vertically_on_load(flip);
    int width,height,channels = 0;
    unsigned char *pic = stbi_load(filename.c_str() , &width, &height, &channels, 3);
 
@@ -130,10 +129,10 @@ bool Image::load(const std::string& filename, bool flip) {
 
 
 bool Image::save(const std::string& filename, bool flip) const {
+   stbi_set_flip_vertically_on_load(flip);
    if(_data != nullptr){ 
-      return stbi_write_png((filename.c_str()) , w, h, ch, _data, w * ch); //valgrind
+      return stbi_write_png((filename.c_str()) , w, h, ch, _data, w * sizeof(struct Pixel)); //valgrind
    }
-   std::cout << "didnt save " << filename << std::endl;
    return false;
 }
 
@@ -162,7 +161,7 @@ Pixel Image::get(int i) const
 
 void Image::set(int i, const Pixel& c)
 {
-   if( i <= 0 && i < w*h*ch && (_data != nullptr)){
+   if( i <= 0 && i < w*h && (_data != nullptr)){
       _data[i] = c;
    }
 }
@@ -170,12 +169,14 @@ void Image::set(int i, const Pixel& c)
 /// //////////////////
 Image Image::resize(int width, int height) const {
    Image result(width, height);
-   for(int i = 0; i<width; i++){
-      int _i = floor((i/(height-1.0f))*(h-1.0f));
-      for(int j = 0; j<height; j++){
-         int _j = floor((j/(width-1.0f))*(w-1.0f));
+   for(int i = 0; i<result.width(); i++){
+      int _i = floor((i/(result.height()-1.0f))*(h-1.0f));
+      for(int j = 0; j<result.height(); j++){
+         int _j = floor((j/(result.width()-1.0f))*(w-1.0f));
          if((_i < w) && (_j < h) && (0 <= _i) && (0 <= _j)){
             result.set(i,j,get(_i,_j));
+         } else{
+            result.set(i,j,Pixel{0,255,0});
          }
       }
 
@@ -210,18 +211,22 @@ Image Image::rotate90() const {
 
 Image Image::subimage(int startx, int starty, int width, int height) const {
    Image sub(width, height);
-   for (int _i = startx, i = 0; _i < startx+width && _i < w; _i++, i++){
-      for (int _j = starty, j = 0; _j < starty+height && _j < h; _j++, j++){
-         sub.set(i,j,get(_i,_j));
+   for (int _i = startx, i = 0; _i < startx+sub.width(); _i++, i++){
+      for (int _j = starty, j = 0; _j < starty+sub.height(); _j++, j++){
+         if ((_i < w) && (_j < h) && (_i >= 0) && (_j >= 0)){
+            sub.set(i,j,get(_i,_j));
+         } else {
+            sub.set(i,j,Pixel{0,0,0});
+         }
       }
    }
    return sub;
 }
 
 void Image::replace(const Image& image, int startx, int starty) {
-   int width = image.w;
-   int height = image.h;
-   if(_data == nullptr || image._data == nullptr){return;}
+   int width = image.width();
+   int height = image.height();
+   if(_data == nullptr || image.data() == nullptr){return;}
 
    for (int _i = startx, i = 0; _i < w && i < width; _i++, i++){
       for (int _j = starty, j = 0; _j < h && j < height; _j++, j++){
@@ -232,7 +237,16 @@ void Image::replace(const Image& image, int startx, int starty) {
 }
 
 Image Image::swirl() const {
-   Image result(0, 0);
+   Image result(w, h);
+   for(int i = 0; i < w; i++){
+      for(int j = 0; j < h; j++){
+         struct Pixel from = get(i,j);
+         unsigned char r = from.b;
+         unsigned char g = from.r;
+         unsigned char b = from.g;
+         result.set(i,j,Pixel{r,g,b});
+      }
+   }
    return result;
 }
 
@@ -272,6 +286,134 @@ Image Image::darkest(const Image& other) const {
    return result;
 }
 
+Image Image::monochrome(int opt) const {
+   int red,green,blue = 0;
+   switch(opt){
+    case 0: // red
+         red = 1;
+         green = 0;
+         blue = 0;
+         break;
+    case 1:
+         green = 1;
+         red = 0;
+         blue = 0;
+         break;
+    case 2:
+         blue = 1;
+         green = 0;
+         red = 0;
+         break;
+   case 3: // yellow
+         red = 1;
+         green = 1;
+         blue = 0;
+         break;
+    case 4: // magenta
+         red = 1;
+         green = 0;
+         blue = 1;
+         break;
+    case 5: // teal
+         blue = 1;
+         green = 1;
+         red = 0;
+         break;
+    default:
+         return grayscale();
+}
+
+   Image result(w, h);
+   for(int i = 0; i < w; i++){
+      for(int j = 0; j < h; j++){
+         struct Pixel from = get(i,j);
+         unsigned char r = (from.r)*(red);
+         unsigned char g = (from.g)*(green);
+         unsigned char b = (from.b)*(blue);
+         result.set(i,j,Pixel{r,g,b});
+      }
+   }
+   return result;
+}
+
+Image Image::saturate(unsigned char ammount) const{
+   Image result(w, h);
+   unsigned char a = ammount;
+   unsigned char r,g,b = 0;
+   for(int i = 0; i < w; i++){
+      for(int j = 0; j < h; j++){
+         struct Pixel from = get(i,j);
+         if(from.r >= from.g && from.r>= from.g){
+            (from.r < 255-2*a)? (r = from.r + 2*a) : (r = 255);
+            (from.g-a > 0)? (g = from.g - a) : (g = 0);
+            (from.b-a > 0)? (b = from.b - a) : (b = 0);
+         } else if(from.g >= from.r && from.g>= from.b){
+            (from.g < 255-2*a)? (g = from.g + 2*a) : (g = 255);
+            (from.r-a > 0)? (r = from.r - a) : (r = 0);
+            (from.b-a > 0)? (b = from.b - a) : (b = 0);
+
+         } else if(from.b >= from.g && from.b>= from.r){
+            (from.b < 255-2*a)? (b = from.b + 2*a) : (b = 255);
+            (from.r-a > 0)? (r = from.r - a) : (r = 0);
+            (from.g-a > 0)? (g = from.g - a) : (g = 0);
+         }
+         result.set(i,j,Pixel{r,g,b});
+      }
+   }
+   return result;
+
+}
+
+Image Image::contrast(unsigned char ammount) const{
+   Image result(w, h);
+   unsigned char a = ammount;
+   unsigned char r,g,b = 0;
+   for(int i = 0; i < w; i++){
+      for(int j = 0; j < h; j++){
+         struct Pixel from = get(i,j);
+         int sum = from.r + from.g + from.b;
+         if(sum>(127*3)){
+            (from.r + a < 255)? (r = from.r + a) : (r = 255);
+            (from.g + a < 255)? (g = from.g + a) : (g = 255);
+            (from.b + a < 255)? (b = from.b + a) : (b = 255);
+            
+         } else {
+            (from.r - a > 0)? (r = from.r - a) : (r = 0);
+            (from.g - a > 0)? (g = from.g - a) : (g = 0);
+            (from.b - a > 0)? (b = from.b - a) : (b = 0);
+         }
+         result.set(i,j,Pixel{r,g,b});
+      }
+   }
+   return result;
+
+}
+
+
+Image Image::redTeal(unsigned char ammount) const{
+   Image result(w, h);
+   unsigned char a = ammount;
+   unsigned char r,g,b = 0;
+   for(int i = 0; i < w; i++){
+      for(int j = 0; j < h; j++){
+         struct Pixel from = get(i,j);
+         if(from.r > from.b){
+            (from.r + 2*a < 255)? (r = from.r + a) : (r = 255);
+            (from.g - a > 0)? (g = from.g - a) : (g = 0);
+            b = from.b;
+            
+         } else {
+            (from.r - a > 0)? (r = from.r - a) : (r = 0);
+            (from.b + 2*a < 255)? (b = from.b + 2*a) : (b = 255);
+            (from.g + a < 255)? (g = from.g + a) : (g = 255);
+            // g = from.g; 
+         }
+         result.set(i,j,Pixel{r,g,b});
+      }
+   }
+   return result;
+   
+}
 Image Image::gammaCorrect(float gamma) const {
 
    Image result(w, h);
@@ -290,7 +432,7 @@ Image Image::gammaCorrect(float gamma) const {
 
 Image Image::alphaBlend(const Image& other, float alpha) const {
    Image result(w,h);
-   if(_data == nullptr || other._data == nullptr){return result;}
+   if(_data == nullptr || other.data() == nullptr){return result;}
 
    for(int i = 0; i<w*h; i++){
       _data[i].r = _data[i].r*(1-alpha) + other._data[i].r*(alpha);
@@ -302,9 +444,18 @@ Image Image::alphaBlend(const Image& other, float alpha) const {
 }
 
 Image Image::invert() const {
-   Image image(0, 0);
-   
-   return image;
+   Image result(w, h);
+   for(int i = 0; i < w; i++){
+      for(int j = 0; j < h; j++){
+         struct Pixel from = get(i,j);
+         unsigned char max = 255;
+         unsigned char r = max - from.r;
+         unsigned char g = max - from.g;
+         unsigned char b = max - from.b;
+         result.set(i,j,Pixel{r,g,b});
+      }
+   }
+   return result;
 }
 
 Image Image::grayscale() const {
@@ -314,16 +465,10 @@ Image Image::grayscale() const {
          struct Pixel rgb = get(i,j);
          unsigned char val = rgb.r*.11 + rgb.g*.59 + rgb.b*.11;
          result.set(i,j,Pixel{val, val, val});
-         // result._data[i*w + j] = rgb.r*.11 + rgb.g*.59 + rgb.b*.11;
 
       }
    }
-   // for(int i = 0; i<w*h*ch; i++){
-   //    char r = _data[i];
-   //    char g = _data[i+1];
-   //    char b = _data[i+2];
-   //    result._data[i] = r*.11 + g*.59 + b*.11;
-   // }
+
    
    return result;
 }

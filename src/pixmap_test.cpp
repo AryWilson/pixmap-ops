@@ -54,39 +54,82 @@ int main(int argc, char** argv)
    
 
 
-   // resize
-   Image resize = image.resize(200,300);
+
+   // // resize
+   // Image resize = image.resize(200,300);
    // resize.save("earth-200-300.png"); // VALGRIND ERROR
+   
 
    // grayscale
    Image grayscale = image.grayscale(); 
    grayscale.save("earth-grayscale.png");
 
-   // flip horizontal
-   Image flip = image.flipHorizontal(); 
-   flip.save("earth-flip.png");  
+   // // flip horizontal
+   // Image flip = image.flipHorizontal(); 
+   // flip.save("earth-flip.png");  
 
-   // sub image
-   Image sub = image.subimage(200, 200, 100, 100);
+   // // sub image
+   // Image sub = image.subimage(200, 200, 100, 100);
    // sub.save("earth-subimage.png"); //VALGRIND ERROR
 
-   // gamma correction
-   Image gamma = image.gammaCorrect(0.6f); 
-   gamma.save("earth-gamma-0.6.png"); 
+   // // gamma correction
+   // Image gamma = image.gammaCorrect(0.6f); 
+   // gamma.save("earth-gamma-0.6.png"); 
 
-   gamma = image.gammaCorrect(2.2f);
-   gamma.save("earth-gamma-2.2.png"); 
+   // gamma = image.gammaCorrect(2.2f);
+   // gamma.save("earth-gamma-2.2.png"); 
 
-   // alpha blend
-   Image soup;
-   soup.load("../images/soup.png");
+   // // alpha blend
+   // Image soup;
+   // soup.load("../images/soup.png");
 
-   int y = (int) (0.5f * (image.width() - soup.width()));
-   int x = (int) (0.5f * (image.height() - soup.height()));
-   Image background = image.subimage(x, y, soup.width(), soup.height());
+   // int y = (int) (0.5f * (image.width() - soup.width()));
+   // int x = (int) (0.5f * (image.height() - soup.height()));
+   // Image background = image.subimage(x, y, soup.width(), soup.height());
    // background.save("background-test.png"); // VALGRIND ERROR
    // Image blend = background.alphaBlend(soup, 0.5f);
    // image.replace(blend, x, y);
    // image.save("earth-blend-0.5.png");
+
+
+   // part 2 tests
+   // swirl colors
+   Image swirl = image.swirl();
+   swirl.save("swirl.png");
+   // invert colors
+   Image invert = image.invert();
+   invert.save("invert.png");
+   // monochrome
+   Image red = image.monochrome(0);
+   red.save("red.png");
+   Image green = image.monochrome(1);
+   green.save("green.png");
+   Image blue = image.monochrome(2);
+   blue.save("blue.png");
+   Image gray = image.monochrome(9);
+   gray.save("grey.png");
+
+   // saturate
+   Image bright = image.saturate(20);
+   bright.save("bright.png");
+
+   //binary
+   Image binary = image.saturate(255);
+   binary.save("binary.png");
+
+   // contrast
+   Image contrast = image.contrast(10);
+   contrast.save("contrast-10.png");
+   Image contrast2 = image.contrast(30);
+   contrast2.save("contrast-30.png");
+
+   // red-teal filter
+   Image instaFilter = image.redTeal(20);
+   instaFilter.save("filter-20.png");
+
+   // lightest
+   // darkest
+   // difference
+   // multiply
 }
 

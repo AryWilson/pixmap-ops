@@ -167,6 +167,18 @@ class Image {
   // Assumes that the two images are the same size
   Image darkest(const Image& other) const;
 
+  // only display the specified rgb color of the image
+  // default returns grayscale
+  Image monochrome(int opt) const;
+
+  // makes the image more vibrant by the specified ammount
+  Image saturate(unsigned char ammount) const;
+  // makes the darkest values darker and the lightest values lighter
+  Image contrast(unsigned char ammount) const;
+
+  // applies red-teal filter
+  Image redTeal(unsigned char ammount) const;
+
   // Apply gamma correction
   Image gammaCorrect(float gamma) const;
 
