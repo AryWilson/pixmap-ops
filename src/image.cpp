@@ -33,7 +33,9 @@ Image::Image(const Image& orig){
    w = orig.w;
    h = orig.h;
    ch = orig.ch;
-   _data = (orig._data);
+   _data = new char[w*h*ch];
+   memcpy(_data, orig._data, w*h*ch);
+   // _data = (orig._data);
 
   
 }
@@ -48,10 +50,12 @@ Image& Image::operator=(const Image& orig) {
    _data = nullptr;
   }
 
-  _data = orig._data;
    w = orig.w;
    h = orig.h;
    ch = orig.ch;
+   // _data = orig._data;
+   _data = new char[w*h*ch];
+   memcpy(_data, orig._data, w*h*ch);
    
    return *this;
 }
@@ -86,7 +90,11 @@ void Image::set(int width, int height, unsigned char* data) {
       _data = nullptr;
 
    }
-   _data = (char*) data;
+   // _data = (char*) data;
+   _data = new char[w*h*ch];
+   memcpy(_data, (char*) data, w*h*ch);
+
+
 
 }
 
@@ -103,7 +111,7 @@ bool Image::load(const std::string& filename, bool flip) {
          delete[] _data;
          _data = nullptr;
       }
-      _data = new char [w*h*ch];
+      _data = new char[w*h*ch];
 
       // copy values, in which case we can free pic
       for(int i = 0; i<w*h*ch; i++){
@@ -117,10 +125,8 @@ bool Image::load(const std::string& filename, bool flip) {
 
 
 bool Image::save(const std::string& filename, bool flip) const {
-   if(_data != nullptr){ //valgrind conditional jump, uninitialized values
-      //returns int
-      stbi_write_png((filename.c_str()) , w, h, ch, _data, w * ch); //valgrind
-      return true;
+   if(_data != nullptr){ 
+      return stbi_write_png((filename.c_str()) , w, h, ch, _data, w * ch); //valgrind
    }
    return false;
 }
@@ -171,13 +177,14 @@ Image Image::resize(int width, int height) const {
    Image result(width, height);
    if(_data == nullptr){return result;}
 
-   result._data = new char [width*height*ch];
+   // result._data = new char[width*height*ch]; // WHAT
    for(int i = 0; i<width; i++){
+      int _i = floor((i/(height-1.0f))*(h-1.0f));
       for(int j = 0; j<height; j++){
-         int _i = floor((i/(h-1.0f))*(height-1));
-         int _j = floor((j/(w-1.0f))*(width-1));
-
-         result.set(i,j,get(_i,_j));
+         int _j = floor((j/(width-1.0f))*(w-1.0f));
+         if((_i < w) && (_j < h) && (0 <= _i) && (0 <= _j)){
+            result.set(i,j,get(_i,_j));
+         }
       }
 
    }
@@ -187,7 +194,7 @@ Image Image::resize(int width, int height) const {
 Image Image::flipHorizontal() const {
    Image result(w, h);
    if(_data == nullptr){return result;}
-   result._data = new char [w*h*ch];
+   // result._data = new char[w*h*ch];
    for(int i = 0; i<w/2 ; i++){
       for(int j = 0; j < h; j++){
          struct Pixel swap = get(w-i,j);
@@ -214,12 +221,10 @@ Image Image::rotate90() const {
 Image Image::subimage(int startx, int starty, int width, int height) const {
    Image sub(width, height);
    if(_data == nullptr){return sub;}
-   sub._data = new char [width*height*ch];
-   int index = 0;
-   for (int i = startx; i < startx+width && i < w; i++){
-      for (int j = starty; j < starty+height  && j < h; j++){
-         sub.set(index,get(i,j));
-         index += 3;
+   // sub._data = new char[width*height*ch]; // WHAT
+   for (int _i = startx, i = 0; _i < startx+width && _i < w; _i++, i++){
+      for (int _j = starty, j = 0; _j < starty+height && _j < h; _j++, j++){
+         sub.set(i,j,get(_i,_j));
       }
    }
    return sub;
@@ -283,7 +288,7 @@ Image Image::gammaCorrect(float gamma) const {
 
    Image result(w, h);
    if(_data == nullptr){return result;}
-   result._data = new char [w*h*ch];
+   result._data = new char[w*h*ch];
    for(int i = 0; i<w*h*ch; i++){
       result._data[i] = pow(_data[i],(1/gamma));
    }
@@ -296,7 +301,7 @@ Image Image::alphaBlend(const Image& other, float alpha) const {
    Image result(w,h);
    if(_data == nullptr || other._data == nullptr){return result;}
 
-   result._data = new char [w*h*ch];
+   result._data = new char[w*h*ch];
    for(int i = 0; i<w*h*ch; i++){
       _data[i] = _data[i]*(1-alpha) + other._data[i]*(alpha);
    }
@@ -313,7 +318,7 @@ Image Image::invert() const {
 Image Image::grayscale() const {
    Image result(w, h);
    if(_data == nullptr){return result;}
-   result._data = new char [w*h*ch];
+   result._data = new char[w*h*ch];
    for(int i = 0; i < w; i++){
       for(int j = 0; j < h; j++){
          struct Pixel rgb = get(i,j);

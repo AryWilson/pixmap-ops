@@ -22,6 +22,7 @@ int main(int argc, char** argv)
    }
    image.save("feep-test-save.png"); // should match original
    
+
    // should print 4 4
    cout << "loaded feep: " << image.width() << " " << image.height() << endl;
 
@@ -50,6 +51,8 @@ int main(int argc, char** argv)
 
    // should print 400 400
    cout << "loaded earth: " << image.width() << " " << image.height() << endl;
+   
+
 
    // resize
    Image resize = image.resize(200,300);
@@ -61,10 +64,10 @@ int main(int argc, char** argv)
 
    // flip horizontal
    Image flip = image.flipHorizontal(); 
-   flip.save("earth-flip.png"); 
+   flip.save("earth-flip.png");  // VALGRIND ERROR
 
    // sub image
-   Image sub = image.subimage(200, 200, 100, 100); 
+   Image sub = image.subimage(200, 200, 100, 100);
    sub.save("earth-subimage.png"); 
 
    // gamma correction
