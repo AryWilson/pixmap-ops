@@ -18,6 +18,7 @@ struct Pixel {
     unsigned char b;
 };
 
+
 /**
  * @brief Implements loading, modifying, and saving RGB images
  */
@@ -30,6 +31,7 @@ class Image {
 
 
   virtual ~Image();
+  void clean();
 
   /** 
    * @brief Load the given filename 
@@ -191,8 +193,9 @@ class Image {
 
  private:
   int w,h,ch = 0;
-  // struct Pixel * _data = nullptr;
-  char * _data;
+  struct Pixel * _data = nullptr;
+  bool stb_load = false;
+
 };
 }  // namespace agl
 #endif  // AGL_IMAGE_H_

@@ -10,31 +10,38 @@
 
 namespace agl {
 
-// void Image::clean(){
-//    if (_data != nullptr){
-//       // stbi_image_free(_data);
-//       delete[] _data;
-//       _data = nullptr;
-//    }
-//    if (){
-//       stbi_image_free(_data);
-//    }
+void Image::clean(){
+   w = 0;
+   h = 0;
+   ch = 3;
+   if (_data != nullptr){
+      if (stb_load){
+         stbi_image_free(_data);
+         _data = nullptr;
+         stb_load = false;
+      }
+      if (_data != nullptr){
+         delete[] _data;
+         _data = nullptr;
+      }
+   }
 
-// }
+
+}
 
 Image::Image() {
    // default constructor
    w = 0;
    h = 0;
    ch = 3;
-   _data = new char[w*h*ch];
+   _data = new struct Pixel[w*h];
 }
 
 Image::Image(int width, int height)  {
    w = width;
    h = height;
    ch = 3;
-   _data = new char[w*h*ch];
+   _data = new struct Pixel[w*h];
    // general constructor
 
 }
@@ -44,8 +51,8 @@ Image::Image(const Image& orig){
    w = orig.w;
    h = orig.h;
    ch = orig.ch;
-   _data = new char[w*h*ch];
-   memcpy(_data, orig._data, w*h*ch);
+   _data = new struct Pixel[w*h];
+   memcpy(_data, orig._data, w*h*sizeof(struct Pixel));
    // _data = (orig._data);
 
   
@@ -65,20 +72,15 @@ Image& Image::operator=(const Image& orig) {
    h = orig.h;
    ch = orig.ch;
    // _data = orig._data;
-   _data = new char[w*h*ch];
-   memcpy(_data, orig._data, w*h*ch);
+   _data = new struct Pixel[w*h];
+   memcpy(_data, orig._data, w*h*sizeof(struct Pixel));
    
    return *this;
 }
 
 Image::~Image() {
    // destructor
-   if (_data != nullptr){
-      // stbi_image_free(_data);
-      delete[] _data;
-      _data = nullptr;
-
-   }
+   clean();
 }
 
 int Image::width() const { 
@@ -90,7 +92,7 @@ int Image::height() const {
 }
 
 char* Image::data() const {
-   return _data;
+   return (char*) _data;
 }
 
 void Image::set(int width, int height, unsigned char* data) {
@@ -102,8 +104,8 @@ void Image::set(int width, int height, unsigned char* data) {
 
    }
    // _data = (char*) data;
-   _data = new char[w*h*ch];
-   memcpy(_data, (char*) data, w*h*ch);
+   _data = new struct Pixel[w*h];
+   memcpy(_data, data, w*h*sizeof(struct Pixel));
 
 
 
@@ -122,13 +124,8 @@ bool Image::load(const std::string& filename, bool flip) {
          delete[] _data;
          _data = nullptr;
       }
-      _data = new char[w*h*ch];
-
-      // copy values, in which case we can free pic
-      for(int i = 0; i<w*h*ch; i++){
-         _data[i] = pic[i];
-      }
-      stbi_image_free(pic);
+      _data = (struct Pixel *) pic;
+      stb_load = true;
       return true;
    }
    return false;
@@ -144,47 +141,36 @@ bool Image::save(const std::string& filename, bool flip) const {
 }
 
 Pixel Image::get(int row, int col) const {
-   unsigned char r,g,b = 0;
-   if((row < h) && (col < w) && (_data != nullptr)){
-      r = _data[ch*row*w + ch*col];
-      g = _data[ch*row*w + ch*col + 1];
-      b = _data[ch*row*w + ch*col + 2];
+   if((row >= 0) && (col >= 0) && (row < h) && (col < w) && (_data != nullptr)){
+      return _data[row*w + col];
    }
-   return Pixel{ r, g, b };
+   return Pixel{ 0, 0, 0 };
 }
 
 void Image::set(int row, int col, const Pixel& color) {
    //check for valid inputs
-   if((row < h) & (col < w) && (_data != nullptr)){
-      _data[ch*row*w + ch*col] = color.r;
-      _data[ch*row*w + ch*col + 1] = color.g;
-      _data[ch*row*w + ch*col + 2] = color.b;
+   if((row >= 0) && (col >= 0) && (row < h) && (col < w) && (_data != nullptr)){
+
+      _data[row*w + col] = color;
    }
-
- 
 }
-
 
 Pixel Image::get(int i) const
 {
-   unsigned char r,g,b = 0;
-   if(i < w*h*ch  && (_data != nullptr)){
-      r = _data[i*ch];
-      g = _data[i*ch + 1];
-      b = _data[i*ch + 2];
+   if( i <= 0 && i < w*h  && (_data != nullptr)){
+      return _data[i];
    }
-   return Pixel{ r, g, b };
+   return Pixel{ 0, 0, 0 };
 }
 
 void Image::set(int i, const Pixel& c)
 {
-      if(i < w*h*ch && (_data != nullptr)){
-      _data[i*ch] = c.r;
-      _data[i*ch + 1] = c.g;
-      _data[i*ch + 2] = c.b;
+   if( i <= 0 && i < w*h*ch && (_data != nullptr)){
+      _data[i] = c;
    }
 }
 
+/// //////////////////
 Image Image::resize(int width, int height) const {
    Image result(width, height);
    for(int i = 0; i<width; i++){
@@ -202,7 +188,7 @@ Image Image::resize(int width, int height) const {
 
 Image Image::flipHorizontal() const {
    Image result(w, h);
-   for(int i = 0; i<round(w/2.0f + 0.5f) ; i++){
+   for(int i = 0; i < round(w/2.0f + 0.5f) ; i++){
       for(int j = 0; j < h; j++){
          struct Pixel swap = get((w-1)-i,j);
          result.set((w-1)-i,j, get(i,j));
@@ -309,8 +295,10 @@ Image Image::alphaBlend(const Image& other, float alpha) const {
    Image result(w,h);
    if(_data == nullptr || other._data == nullptr){return result;}
 
-   for(int i = 0; i<w*h*ch; i++){
-      _data[i] = _data[i]*(1-alpha) + other._data[i]*(alpha);
+   for(int i = 0; i<w*h; i++){
+      _data[i].r = _data[i].r*(1-alpha) + other._data[i].r*(alpha);
+      _data[i].g = _data[i].g*(1-alpha) + other._data[i].g*(alpha);
+      _data[i].b = _data[i].b*(1-alpha) + other._data[i].b*(alpha);
    }
 
    return result;
