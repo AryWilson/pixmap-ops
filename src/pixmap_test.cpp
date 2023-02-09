@@ -92,40 +92,50 @@ int main(int argc, char** argv)
    // image.save("earth-blend-0.5.png");
 
 
-   // part 2 tests
-   // swirl colors
-   Image swirl = image.swirl();
-   swirl.save("swirl.png");
-   // invert colors
-   Image invert = image.invert();
-   invert.save("invert.png");
-   // monochrome
-   Image red = image.monochrome(0);
-   red.save("red.png");
-   Image green = image.monochrome(1);
-   green.save("green.png");
-   Image blue = image.monochrome(2);
-   blue.save("blue.png");
-   Image gray = image.monochrome(9);
-   gray.save("grey.png");
+   // // part 2 tests
+   // // swirl colors
+   // Image swirl = image.swirl();
+   // swirl.save("swirl.png");
+   // // invert colors
+   // Image invert = image.invert();
+   // invert.save("invert.png");
+   // // monochrome
+   // Image red = image.monochrome(0);
+   // red.save("red.png");
+   // Image green = image.monochrome(1);
+   // green.save("green.png");
+   // Image blue = image.monochrome(2);
+   // blue.save("blue.png");
+   // Image gray = image.monochrome(9);
+   // gray.save("grey.png");
 
-   // saturate
-   Image bright = image.saturate(20);
-   bright.save("bright.png");
+   // // saturate
+   // Image bright = image.saturate(20);
+   // bright.save("bright.png");
 
-   //binary
-   Image binary = image.saturate(255);
-   binary.save("binary.png");
+   // //binary
+   // Image binary = image.saturate(255);
+   // binary.save("binary.png");
 
-   // contrast
-   Image contrast = image.contrast(10);
-   contrast.save("contrast-10.png");
-   Image contrast2 = image.contrast(30);
-   contrast2.save("contrast-30.png");
+   // // contrast
+   // Image contrast = image.contrast(10);
+   // contrast.save("contrast-10.png");
+   // Image contrast2 = image.contrast(30);
+   // contrast2.save("contrast-30.png");
 
-   // red-teal filter
-   Image instaFilter = image.redTeal(20);
-   instaFilter.save("filter-20.png");
+   // // red-teal filter
+   // Image instaFilter = image.redTeal(20);
+   // instaFilter.save("filter-20.png");
+
+   
+   if (!image.load("../images/bricks.png")) {
+      std::cout << "ERROR: Cannot load image! Exiting...\n";
+      exit(0);
+   }
+
+   // sobel edge
+   Image sobel = image.edgeFinder();
+   sobel.save("sobel.png");
 
    // lightest
    // darkest

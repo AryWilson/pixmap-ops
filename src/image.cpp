@@ -414,6 +414,43 @@ Image Image::redTeal(unsigned char ammount) const{
    return result;
    
 }
+
+Image Image::edgeFinder() const {
+   Image ret(w,h);
+   ret = grayscale();
+   char Gx[9] = {-1,0,1,-2,0,2,-1,0,1};
+   // char Gy[9] = {-1,-2,-1,0,0,0,1,2,1};
+   struct Pixel same;
+   for(int i = 0; i<w; i++){
+      for(int j = 0; j<h; j++){
+         same = ret.get(i,j);  
+         unsigned char red = 0;
+         int sum = 0;
+         for(int x = i-1, idx = 0; x<i+1; x++, idx++){
+            for(int y = j-1, idy = 0; y<j+1; y++, idy++){
+               if(x<w && y<h && 0<=x && 0<=y){
+                  sum += (Gx[idx*3 + idy])*(get(x,y).r);
+                  // sum += (Gy[idx*3 + idy])*(get(x,y).r);
+               } else {
+                  sum += (Gx[idx*3 + idy])*(same.r);
+                  // sum += (Gy[idx*3 + idy])*(same.r);
+               }
+            }
+         }
+         if(sum>255){
+            red = (unsigned char) 255;
+         } else if(sum<0){
+            red = (unsigned char) 0;
+         } else{
+            red = sum;
+         }
+         // red = sum % 255;
+         ret.set(i,j,Pixel{red,red,red});
+      }
+   }
+   return ret;
+}
+
 Image Image::gammaCorrect(float gamma) const {
 
    Image result(w, h);
@@ -486,7 +523,10 @@ Image Image::bitmap(int size) const {
 }
 
 void Image::fill(const Pixel& c) {
+
   }
+
+
 
 }  // namespace agl
 

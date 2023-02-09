@@ -179,6 +179,10 @@ class Image {
   // applies red-teal filter
   Image redTeal(unsigned char ammount) const;
 
+  // Sobel Edge Detector
+  Image edgeFinder()const;  
+
+
   // Apply gamma correction
   Image gammaCorrect(float gamma) const;
 
