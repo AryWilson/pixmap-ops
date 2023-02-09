@@ -179,8 +179,16 @@ class Image {
   // applies red-teal filter
   Image redTeal(unsigned char ammount) const;
 
+  // returns the average va;ue [0,255] of a given pixel
+  // optional greyscale flag
+  // unsigned char average(struct Pixel rgb, bool greyscale = false);
+
   // Sobel Edge Detector
   Image edgeFinder()const;  
+
+  // box blur
+  Image blur() const;
+
 
 
   // Apply gamma correction

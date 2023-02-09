@@ -131,29 +131,29 @@ bool Image::load(const std::string& filename, bool flip) {
 bool Image::save(const std::string& filename, bool flip) const {
    stbi_set_flip_vertically_on_load(flip);
    if(_data != nullptr){ 
-      return stbi_write_png((filename.c_str()) , w, h, ch, _data, w * sizeof(struct Pixel)); //valgrind
+      return stbi_write_png((filename.c_str()) , width(), height(), ch, data(), width() * sizeof(struct Pixel)); //valgrind
    }
    return false;
 }
 
 Pixel Image::get(int row, int col) const {
-   if((row >= 0) && (col >= 0) && (row < h) && (col < w) && (_data != nullptr)){
-      return _data[row*w + col];
+   if((row >= 0) && (col >= 0) && (row < height()) && (col < width()) && (_data != nullptr)){
+      return _data[row*width() + col];
    }
-   return Pixel{ 0, 0, 0 };
+   return Pixel{ 255, 0, 0 };
 }
 
 void Image::set(int row, int col, const Pixel& color) {
    //check for valid inputs
-   if((row >= 0) && (col >= 0) && (row < h) && (col < w) && (_data != nullptr)){
+   if((row >= 0) && (col >= 0) && (row < height()) && (col < width()) && (_data != nullptr)){
 
-      _data[row*w + col] = color;
+      _data[row*width() + col] = color;
    }
 }
 
 Pixel Image::get(int i) const
 {
-   if( i <= 0 && i < w*h  && (_data != nullptr)){
+   if( i >= 0 && i < w*h  && (_data != nullptr)){
       return _data[i];
    }
    return Pixel{ 0, 0, 0 };
@@ -161,7 +161,7 @@ Pixel Image::get(int i) const
 
 void Image::set(int i, const Pixel& c)
 {
-   if( i <= 0 && i < w*h && (_data != nullptr)){
+   if( i >= 0 && i < w*h && (_data != nullptr)){
       _data[i] = c;
    }
 }
@@ -169,11 +169,13 @@ void Image::set(int i, const Pixel& c)
 /// //////////////////
 Image Image::resize(int width, int height) const {
    Image result(width, height);
-   for(int i = 0; i<result.width(); i++){
-      int _i = floor((i/(result.height()-1.0f))*(h-1.0f));
-      for(int j = 0; j<result.height(); j++){
-         int _j = floor((j/(result.width()-1.0f))*(w-1.0f));
-         if((_i < w) && (_j < h) && (0 <= _i) && (0 <= _j)){
+   int _i,_j;
+   for(int i = 0; i<height; i++){
+      for(int j = 0; j<width; j++){
+
+         _i = floor((i/(height-1.0f))*(h-1.0f));
+         _j = floor((j/(width-1.0f))*(w-1.0f));
+         if((_i < h) && (_j < w) && (0 <= _i) && (0 <= _j)){
             result.set(i,j,get(_i,_j));
          } else{
             result.set(i,j,Pixel{0,255,0});
@@ -211,8 +213,8 @@ Image Image::rotate90() const {
 
 Image Image::subimage(int startx, int starty, int width, int height) const {
    Image sub(width, height);
-   for (int _i = startx, i = 0; _i < startx+sub.width(); _i++, i++){
-      for (int _j = starty, j = 0; _j < starty+sub.height(); _j++, j++){
+   for(int _i = startx, i = 0; _i < startx+sub.width(); _i++, i++){
+      for(int _j = starty, j = 0; _j < starty+sub.height(); _j++, j++){
          if ((_i < w) && (_j < h) && (_i >= 0) && (_j >= 0)){
             sub.set(i,j,get(_i,_j));
          } else {
@@ -228,8 +230,8 @@ void Image::replace(const Image& image, int startx, int starty) {
    int height = image.height();
    if(_data == nullptr || image.data() == nullptr){return;}
 
-   for (int _i = startx, i = 0; _i < w && i < width; _i++, i++){
-      for (int _j = starty, j = 0; _j < h && j < height; _j++, j++){
+   for(int _i = startx, i = 0; _i < w && i < width; _i++, i++){
+      for(int _j = starty, j = 0; _j < h && j < height; _j++, j++){
          set(_i,_j,image.get(i,j));
       }
    }
@@ -415,41 +417,114 @@ Image Image::redTeal(unsigned char ammount) const{
    
 }
 
+  // returns the average va;ue [0,255] of a given pixel
+  // optional greyscale flag
+unsigned char average(struct Pixel rgb, bool greyscale = false){
+   if(greyscale){
+      return (rgb.r)*.11 + (rgb.g)*.59 + (rgb.b)*.11;
+   } else {
+      return (rgb.r)/3 + (rgb.g)/3 + (rgb.b)/3;
+   }
+
+}
 Image Image::edgeFinder() const {
-   Image ret(w,h);
-   ret = grayscale();
-   char Gx[9] = {-1,0,1,-2,0,2,-1,0,1};
-   // char Gy[9] = {-1,-2,-1,0,0,0,1,2,1};
-   struct Pixel same;
+   Image result(w,h);
+   int Gx[9] = {-1,0,1,-2,0,2,-1,0,1};
+   int Gy[9] = {-1,-2,-1,0,0,0,1,2,1};
+
+   unsigned char pix;
+   int sumx, sumy;
+   double sum;
    for(int i = 0; i<w; i++){
-      for(int j = 0; j<h; j++){
-         same = ret.get(i,j);  
-         unsigned char red = 0;
-         int sum = 0;
-         for(int x = i-1, idx = 0; x<i+1; x++, idx++){
-            for(int y = j-1, idy = 0; y<j+1; y++, idy++){
+      for(int j = 0; j<h; j++){ 
+         pix = 0;
+         sumx = 0;
+         sumy = 0;
+         for(int x = i-1, idx = 0; x<=i+1; x++, idx++){
+            for(int y = j-1, idy = 0; y<=j+1; y++, idy++){
                if(x<w && y<h && 0<=x && 0<=y){
-                  sum += (Gx[idx*3 + idy])*(get(x,y).r);
-                  // sum += (Gy[idx*3 + idy])*(get(x,y).r);
+                  sumx += (Gx[idx*3 + idy])*((int) average(get(x,y)));
+                  sumy += (Gy[idx*3 + idy])*((int) average(get(x,y)));
                } else {
-                  sum += (Gx[idx*3 + idy])*(same.r);
-                  // sum += (Gy[idx*3 + idy])*(same.r);
+                  sumx += (Gx[idx*3 + idy])*((int) average(get(i,j)));
+                  sumy += (Gy[idx*3 + idy])*((int) average(get(i,j)));
                }
             }
          }
+         sum = sqrt(pow(sumx,2)+pow(sumy,2));
          if(sum>255){
-            red = (unsigned char) 255;
+            pix = 255;
          } else if(sum<0){
-            red = (unsigned char) 0;
+            pix = 0;
          } else{
-            red = sum;
+            pix = sum;
          }
          // red = sum % 255;
-         ret.set(i,j,Pixel{red,red,red});
+         result.set(i,j,Pixel{pix,pix,pix});
       }
    }
-   return ret;
+   return result;
 }
+
+
+Image Image::blur() const {
+   Image result(w,h);
+   // int G[9] = {1,1,1,1,1,1,1,1,1};
+
+   struct Pixel pix;
+   float sumr, sumg, sumb;
+   for(int i = 0; i<w; i++){
+      for(int j = 0; j<h; j++){ 
+         pix = {0,0,0};
+         sumr = 0;
+         sumg = 0;
+         sumb = 0;
+         for(int x = i-1, idx = 0; x<=i+1; x++, idx++){
+            for(int y = j-1, idy = 0; y<=j+1; y++, idy++){
+               if(x<w && y<h && 0<=x && 0<=y){
+                  sumr += get(x,y).r;
+                  sumg += get(x,y).g;
+                  sumb += get(x,y).b;
+               } else {
+                  sumr += get(i,j).r;
+                  sumg += get(i,j).g;
+                  sumb += get(i,j).b;
+               }
+            }
+         }
+         sumr = sumr/9.0f;
+         sumg = sumg/9.0f;
+         sumb = sumb/9.0f;
+         if(sumr>255){
+            pix.r = 255;
+         } else if(sumr<0){
+            pix.r = 0;
+         } else{
+            pix.r = sumr;
+         }
+
+         if(sumg>255){
+            pix.g = 255;
+         } else if(sumg<0){
+            pix.g = 0;
+         } else{
+            pix.g = sumg;
+         }
+
+         if(sumb>255){
+            pix.b = 255;
+         } else if(sumb<0){
+            pix.b = 0;
+         } else{
+            pix.b = sumb;
+         }
+         // red = sum % 255;
+         result.set(i,j,pix);
+      }
+   }
+   return result;
+}
+
 
 Image Image::gammaCorrect(float gamma) const {
 
