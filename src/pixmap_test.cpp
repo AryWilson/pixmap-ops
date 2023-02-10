@@ -7,7 +7,7 @@ using namespace agl;
 
 int main(int argc, char** argv)
 {
-
+   
    Image image;
    if (!image.load("../images/feep.png")) {
       std::cout << "ERROR: Cannot load image! Exiting...\n";
@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 
    // test: copy constructor
    Image copy = image; 
-   copy.save("feep-test-copy.png"); // should match original and load into gimp
+   copy.save("feep-test-copy.png"); // should match oriboginal and load into gimp
 
    // test: assignment operator
    copy = image; 
@@ -76,13 +76,13 @@ int main(int argc, char** argv)
    Image background = image.subimage(x, y, soup.width(), soup.height());
    background.save("background-test.png"); 
    Image blend = background.alphaBlend(soup, 0.5f);
-   blend.save("earth-blend-0.5.png"); // valgrind error
+   blend.save("earth-blend-0.5.png"); 
 
    image.replace(blend, x, y);
-   image.save("earth-blend-0.5.png"); // valgrind error
+   image.save("earth-blend-0.5.png"); 
 
 
-
+   image.load("../images/earth.png");
    // sub image
    Image sub = image.subimage(200, 200, 100, 100);
    sub.save("earth-subimage.png");
@@ -132,9 +132,7 @@ int main(int argc, char** argv)
    Image bright = image.saturate(20);
    bright.save("bright.png");
 
-   //binary
-   Image binary = image.saturate(255);
-   binary.save("binary.png");
+
 
    // contrast
    Image contrast = image.contrast(10);
