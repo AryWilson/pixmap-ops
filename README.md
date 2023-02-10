@@ -117,7 +117,5 @@ Example artwork.
 ![Alt text](/images_/binary.png?raw=true)
 ![Alt text](/images_/bird.png?raw=true)
 ![Alt text](/images_/cat.png?raw=true)
-![Alt text](/images_/sobel1.png?raw=true)
-![Alt text](/images_/sobe12.png?raw=true)
-![Alt text](/images_/lines.png?raw=true)
+![Alt text](/images_/sobel2.png?raw=true)
 
