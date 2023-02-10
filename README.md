@@ -44,45 +44,50 @@ pixmap-ops/build $ ../bin/pixmap_art
 ```
 
 ## Image operators
-
+The origenal example image.
 ![Alt text](/images/earth.png?raw=true)
-resize
-![Alt text](/build/earth-200-300.png?raw=true)
-gamma correction
-![Alt text](/build/earth-gamma-0.6.png?raw=true)
-greyscale
-![Alt text](/build/earth-grayscale.png?raw=true)
-subimage
-![Alt text](/earth-subimage.png?raw=true)
-increase vibrancy
-![Alt text](/build/bright.png?raw=true)
-increase contrast
-![Alt text](/buildcontrast-30.png?raw=true)
-blend two images
-![Alt text](/build/earth-blend-0.5.png?raw=true)
-flip an image
-![Alt text](/build/earth-flip.png?raw=true)
-invert and images colors
-![Alt text](/build/invert.png?raw=true)
-make the image monochrome
-![Alt text](/build/purple.png?raw=true)
-swirl an image's colors
-![Alt text](/build/swirl.png?raw=true)
-red-teal filter
-![Alt text](/build/filter-20?raw=true)
+You can resize and image with the function resize() that takes the new dimentions in pixels.
+![Alt text](/images/earth-200-300.png?raw=true)
+You can perform gamma correction using the function gammeCorection() that takes the gamma value as an input.
+![Alt text](/images/earth-gamma-0.6.png?raw=true)
+![Alt text](/images/earth-gamma-2.2.png?raw=true)
+You can make an image black and white using the greyscale() function.
+![Alt text](/images/earth-grayscale.png?raw=true)
+You can get a portion of the image using subimage() that takes the starting and ending x and y values, in pixels.
+![Alt text](/images/earth-subimage.png?raw=true)
+You can increase the color contrast in an image using the function vibrancy() that takes the ammount you want to increase the vibracy in the range of [0,255].
+![Alt text](/images/bright.png?raw=true)
+You can increase the value contrast of an image using the function contrast() that takes the ammount you want to increase the vibracy in the range of [0,255].
+![Alt text](/images/buildcontrast-30.png?raw=true)
+you can blend two images together with the function alphaBlend() that takes the second image and the fractional ammount of the input image.
+![Alt text](/images/earth-blend-0.5.png?raw=true)
+You can flip an image using flipHorizontal().
+![Alt text](/images/earth-flip.png?raw=true)
+You can invert the colors of an images using invert().
+![Alt text](/images/invert.png?raw=true)
+You can make an image monochrome in any of 6 primary and secondary colors using monochrome() that takes an integer flag as an input. 
+![Alt text](/images/purple.png?raw=true)
+![Alt text](/images/yellow.png?raw=true)
+![Alt text](/images/green.png?raw=true)
+You can change the colors of an image using swirl().
+![Alt text](/images/swirl.png?raw=true)
+there is a red-teal filter you can get using redTeal().
+![Alt text](/images/filter-20?raw=true)
 
+A second default image to demonstrate blur and edge detection().
 ![Alt text](/images/bricks.png?raw=true)
-box blur
-![Alt text](/build/blur?raw=true)
-sobel edge detection
-![Alt text](/build/sobel-blur?raw=true)
+You can perform a box blur using blur().
+![Alt text](/images/blur?raw=true)
+You can perform a sobel edge detection using edgeDetection().
+![Alt text](/images/sobel-blur?raw=true)
 
 
 ## Results
-![Alt text](/build/binary?raw=true)
-![Alt text](/build/bird?raw=true)
-![Alt text](/build/cat?raw=true)
-![Alt text](/build/sobel1?raw=true)
-![Alt text](/build/sobe21?raw=true)
-![Alt text](/build/lines?raw=true)
+Example artwork.
+![Alt text](/images/binary?raw=true)
+![Alt text](/images/bird?raw=true)
+![Alt text](/images/cat?raw=true)
+![Alt text](/images/sobel1?raw=true)
+![Alt text](/images/sobe21?raw=true)
+![Alt text](/images/lines?raw=true)
 
