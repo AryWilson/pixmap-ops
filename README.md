@@ -71,7 +71,7 @@ You can increase the color contrast in an image using the function vibrancy() th
 
 You can increase the value contrast of an image using the function contrast() that takes the ammount you want to increase the vibracy in the range of [0,255].
 
-![Alt text](/images_/buildcontrast-30.png?raw=true)
+![Alt text](/images_/contrast-30.png?raw=true)
 
 you can blend two images together with the function alphaBlend() that takes the second image and the fractional ammount of the input image.
 
