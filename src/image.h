@@ -215,6 +215,12 @@ class Image {
   // Fill this image with a color
   void fill(const Pixel& c);
 
+    // very rough color quantization
+  Image cquant() const;
+
+  // kernel color randomization
+  Image crand() const;
+
  private:
   int w,h,ch = 0;
   struct Pixel * _data = nullptr;

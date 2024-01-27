@@ -572,6 +572,44 @@ Image Image::invert() const {
    return result;
 }
 
+
+Image Image::cquant() const {
+   Image result(w, h);
+   for(int i = 0; i < h; i++){
+      for(int j = 0; j < w; j++){
+         struct Pixel from = get(i,j);
+         unsigned char r = (((unsigned char)(((float)from.r)/50.0)))*50;
+         unsigned char g = (((unsigned char)(((float)from.g)/50.0)))*50;
+         unsigned char b = (((unsigned char)(((float)from.b)/50.0)))*50;
+
+         result.set(i,j,Pixel{r,g,b});
+      }
+   }
+   return result;
+}
+
+
+Image Image::crand() const {
+   Image result(w, h);
+   unsigned char margin = (unsigned char)((w+h)/200);
+   if(margin < 2){margin=2;}
+   for(int i = 0; i < h; i++){
+      for(int j = 0; j < w; j++){
+         int i_ = i + rand() % margin - margin/2;
+         if (i_ < 0){i_ = 0;}
+         else if (i_ > h-1){i_ = h-1;}
+
+         int j_ = j + rand() % margin - margin/2;
+         if (j_ < 0){j_ = 0;}
+         else if (j_ > w-1){j_ = w-1;}
+         struct Pixel from = get(i_,j_);
+         
+         result.set(i,j,from);
+      }
+   }
+   return result;
+}
+
 Image Image::grayscale() const {
    Image result(w, h);
    for(int i = 0; i < h; i++){
